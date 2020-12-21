@@ -1,4 +1,4 @@
-module github.com/gopalrohra/grpc-db/
+module github.com/gopalrohra/grpc-db
 
 go 1.15
 
