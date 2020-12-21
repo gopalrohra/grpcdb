@@ -1,0 +1,13 @@
+syntax = "proto3";
+option go_package = "github.com/gopalrohra/grpc-db/grpc_database";
+package grpc_database;
+
+service GRPCDatabase {
+    rpc CreateDatabase(Database) returns (DatabaseResult) {}
+}
+message Database {
+    string dbname = 1;
+}
+message DatabaseResult {
+    string status = 1;
+}
