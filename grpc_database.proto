@@ -1,13 +1,35 @@
 syntax = "proto3";
-option go_package = "github.com/gopalrohra/grpc-db";
+option go_package = "github.com/gopalrohra/grpc_db";
 package grpc_database;
 
 service GRPCDatabase {
     rpc CreateDatabase(Database) returns (DatabaseResult) {}
+    rpc ExecuteSelect(SelectQuery) returns (SelectQueryResult) {}
 }
 message Database {
     string dbname = 1;
 }
+message DatabaseInfo {
+    string user = 1;
+    string password = 2;
+    string dbname = 3;
+}
 message DatabaseResult {
     string status = 1;
+    string description = 2;
+    DatabaseInfo info = 3;
 }
+message SelectQuery {
+    DatabaseInfo info = 1;
+    repeated string fields = 2;
+    repeated string clauses = 3;
+}
+message SelectQueryResult {
+    string status = 1;
+    string description = 2;
+    Records records = 3;
+}
+message Records {
+    repeated Row rows = 1;
+}
+message Row {}
