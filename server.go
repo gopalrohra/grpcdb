@@ -8,6 +8,7 @@ import (
 
 	db "github.com/gopalrohra/grpcdb/database"
 	pb "github.com/gopalrohra/grpcdb/grpc_database"
+	_ "github.com/lib/pq"
 	grpc "google.golang.org/grpc"
 )
 
@@ -19,6 +20,9 @@ type server struct {
 	pb.UnimplementedGRPCDatabaseServer
 }
 
+func databaseImplementations() map[string]db.Database {
+	return map[string]db.Database{"postgres": db.Postgres{}}
+}
 func main() {
 	fmt.Println("Starting the grpc database service.")
 	fmt.Println("Opening the port 3099")
@@ -34,10 +38,19 @@ func main() {
 }
 func (s *server) CreateDatabase(ctx context.Context, r *pb.Database) (*pb.DatabaseResult, error) {
 	log.Printf("Received: %v", r)
-	supportedDatabases := map[string]db.Database{"postgres": db.Postgres{}}
-	result, err := supportedDatabases["postgres"].CreateDatabase(r)
+
+	result, err := databaseImplementations()["postgres"].CreateDatabase(r)
 	if err != nil {
 		return &pb.DatabaseResult{Status: "Error", Description: err.Error()}, nil
+	}
+	return result, nil
+}
+func (s *server) CreateTable(ctx context.Context, r *pb.TableRequest) (*pb.TableResponse, error) {
+	log.Printf("Received: %v", r)
+
+	result, err := databaseImplementations()["postgres"].CreateTable(r)
+	if err != nil {
+		return &pb.TableResponse{Status: "Error", Description: err.Error()}, nil
 	}
 	return result, nil
 }
