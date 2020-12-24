@@ -4,10 +4,12 @@ package grpc_database;
 
 service GRPCDatabase {
     rpc CreateDatabase(Database) returns (DatabaseResult) {}
+    rpc CreateTable (TableRequest) returns (TableResponse) {}
     rpc ExecuteSelect(SelectQuery) returns (SelectQueryResult) {}
 }
 message Database {
     string dbname = 1;
+    string dbtype = 2;
 }
 message DatabaseInfo {
     string user = 1;
@@ -21,8 +23,9 @@ message DatabaseResult {
 }
 message SelectQuery {
     DatabaseInfo info = 1;
-    repeated string fields = 2;
-    repeated string clauses = 3;
+    string tableName = 2;
+    repeated string fields = 3;
+    repeated string clauses = 4;
 }
 message SelectQueryResult {
     string status = 1;
@@ -33,3 +36,12 @@ message Records {
     repeated Row rows = 1;
 }
 message Row {}
+message TableRequest {
+    DatabaseInfo info = 1;
+    string name = 2;
+    repeated string columnDef = 3;
+}
+message TableResponse {
+    string status = 1;
+    string description = 2;
+}

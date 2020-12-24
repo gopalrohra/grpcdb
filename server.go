@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net"
 
+	db "github.com/gopalrohra/grpc_db/database"
 	pb "github.com/gopalrohra/grpc_db/grpc_database"
-	_ "github.com/lib/pq"
-
 	grpc "google.golang.org/grpc"
 )
 
@@ -35,19 +33,11 @@ func main() {
 	}
 }
 func (s *server) CreateDatabase(ctx context.Context, r *pb.Database) (*pb.DatabaseResult, error) {
-	log.Printf("Received: %v", r.GetDbname())
-	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres"
-	db, err := sql.Open("postgres", psqlInfo)
+	log.Printf("Received: %v", r)
+	supportedDatabases := map[string]db.Database{"postgres": db.Postgres{}}
+	result, err := supportedDatabases["postgres"].CreateDatabase(r)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
 		return &pb.DatabaseResult{Status: "Error"}, nil
 	}
-	defer db.Close()
-	query := fmt.Sprintf("create database %v", r.GetDbname())
-	_, err = db.Exec(query)
-	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
-		return &pb.DatabaseResult{Status: "Error"}, nil
-	}
-	return &pb.DatabaseResult{Status: "Success"}, nil
+	return result, nil
 }
