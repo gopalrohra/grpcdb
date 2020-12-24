@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	pb "github.com/gopalrohra/grpc_db/grpc_database"
+	pb "github.com/gopalrohra/grpcdb/grpc_database"
 	_ "github.com/lib/pq"
 )
 
@@ -15,16 +15,16 @@ func (p Postgres) CreateDatabase(d *pb.Database) (*pb.DatabaseResult, error) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Error occured: %v", err))
-		return &pb.DatabaseResult{Status: "Error"}, nil
+		return &pb.DatabaseResult{Status: "Error", Description: err.Error()}, err
 	}
 	defer db.Close()
 	query := fmt.Sprintf("create database %v", d.GetDbname())
 	_, err = db.Exec(query)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Error occured: %v", err))
-		return &pb.DatabaseResult{Status: "Error"}, nil
+		return &pb.DatabaseResult{Status: "Error", Description: err.Error()}, err
 	}
-	return &pb.DatabaseResult{Status: "Success"}, nil
+	return &pb.DatabaseResult{Status: "Success", Description: "Database created."}, nil
 
 }
 

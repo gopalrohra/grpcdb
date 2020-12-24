@@ -1,7 +1,7 @@
 package database
 
 import (
-	pb "github.com/gopalrohra/grpc_db/grpc_database"
+	pb "github.com/gopalrohra/grpcdb/grpc_database"
 )
 
 type Database interface {

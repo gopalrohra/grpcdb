@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "github.com/gopalrohra/grpc_db";
+option go_package = "github.com/gopalrohra/grpcdb";
 package grpc_database;
 
 service GRPCDatabase {

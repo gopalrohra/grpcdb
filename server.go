@@ -6,8 +6,8 @@ import (
 	"log"
 	"net"
 
-	db "github.com/gopalrohra/grpc_db/database"
-	pb "github.com/gopalrohra/grpc_db/grpc_database"
+	db "github.com/gopalrohra/grpcdb/database"
+	pb "github.com/gopalrohra/grpcdb/grpc_database"
 	grpc "google.golang.org/grpc"
 )
 
@@ -37,7 +37,7 @@ func (s *server) CreateDatabase(ctx context.Context, r *pb.Database) (*pb.Databa
 	supportedDatabases := map[string]db.Database{"postgres": db.Postgres{}}
 	result, err := supportedDatabases["postgres"].CreateDatabase(r)
 	if err != nil {
-		return &pb.DatabaseResult{Status: "Error"}, nil
+		return &pb.DatabaseResult{Status: "Error", Description: err.Error()}, nil
 	}
 	return result, nil
 }
