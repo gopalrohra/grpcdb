@@ -79,7 +79,8 @@ func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, erro
 	}
 	defer result.Close()
 	rows, err := getRows(result)
-	fmt.Println(fmt.Sprintf(" %d of Rows: %v", len(rows), rows))
+	fmt.Println(rows)
+	//fmt.Println(fmt.Sprintf(" %d Rows: %v", len(rows), rows[0]))
 	return &pb.SelectQueryResult{Status: "Success", Description: "Query fetched some result", Records: rows}, nil
 }
 func getRows(result *sql.Rows) ([]*pb.Row, error) {
@@ -90,22 +91,19 @@ func getRows(result *sql.Rows) ([]*pb.Row, error) {
 	}
 	fmt.Println(fmt.Sprintf("Columns: %v", columns))
 	rows := make([]*pb.Row, 0)
-	columnValues := make([]interface{}, len(columns))
 	for result.Next() {
+		columnValues := make([]interface{}, len(columns))
 		for i := range columnValues {
 			columnValues[i] = new(interface{})
 		}
 		if err := result.Scan(columnValues...); err != nil {
 			return nil, err
 		}
-		protoColumns := make([]*pb.Column, len(columns))
+		protoColumns := make([]*pb.Column, 0)
 		for i, column := range columns {
 			protoColumns = append(protoColumns, &pb.Column{ColumnName: column, ColumnValue: fmt.Sprintf("%v", *columnValues[i].(*interface{}))})
-			//row[column] = fmt.Sprintf("%v", *columnValues[i].(*interface{}))
 		}
-		//fmt.Printf("Row: %v\n", row)
 		rows = append(rows, &pb.Row{Columns: protoColumns})
-		fmt.Println(fmt.Sprintf("Size of rows: %d", len(rows)))
 	}
 	return rows, nil
 }
