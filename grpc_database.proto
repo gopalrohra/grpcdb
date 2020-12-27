@@ -30,12 +30,15 @@ message SelectQuery {
 message SelectQueryResult {
     string status = 1;
     string description = 2;
-    Records records = 3;
+    repeated Row records = 3;
 }
-message Records {
-    repeated Row rows = 1;
+message Row {
+    repeated Column columns = 1;
 }
-message Row {}
+message Column {
+    string columnName = 1;
+    string columnValue = 2;
+}
 message TableRequest {
     DatabaseInfo info = 1;
     string name = 2;

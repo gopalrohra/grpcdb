@@ -54,3 +54,12 @@ func (s *server) CreateTable(ctx context.Context, r *pb.TableRequest) (*pb.Table
 	}
 	return result, nil
 }
+func (s *server) ExecuteSelect(ctx context.Context, r *pb.SelectQuery) (*pb.SelectQueryResult, error) {
+	log.Printf("Received: %v", r)
+
+	result, err := databaseImplementations()["postgres"].ExecuteSelect(r)
+	if err != nil {
+		return &pb.SelectQueryResult{Status: "Error", Description: err.Error()}, nil
+	}
+	return result, nil
+}
