@@ -63,3 +63,13 @@ func (s *server) ExecuteSelect(ctx context.Context, r *pb.SelectQuery) (*pb.Sele
 	}
 	return result, nil
 }
+
+func (s *server) ExecuteInsert(ctx context.Context, r *pb.InsertQueryRequest) (*pb.InsertQueryResponse, error) {
+	log.Printf("Received: %v", r)
+
+	result, err := databaseImplementations()["postgres"].ExecuteInsert(r)
+	if err != nil {
+		return &pb.InsertQueryResponse{Status: "Error", Description: err.Error()}, nil
+	}
+	return result, nil
+}

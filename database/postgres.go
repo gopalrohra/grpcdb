@@ -11,7 +11,7 @@ import (
 // Postgres struct to implement Database interface
 type Postgres struct{}
 
-func executeDDLQuery(query string, psqlInfo string) (sql.Result, error) {
+func executeQuery(query string, psqlInfo string) (sql.Result, error) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func executeDDLQuery(query string, psqlInfo string) (sql.Result, error) {
 	return result, nil
 }
 
-func executeDMLQuery(query string, psqlInfo string) (*sql.Rows, error) {
+func fetchRows(query string, psqlInfo string) (*sql.Rows, error) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func executeDMLQuery(query string, psqlInfo string) (*sql.Rows, error) {
 func (p Postgres) CreateDatabase(d *pb.Database) (*pb.DatabaseResult, error) {
 	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres"
 	query := fmt.Sprintf("create database %v", d.GetDbname())
-	_, err := executeDDLQuery(query, psqlInfo)
+	_, err := executeQuery(query, psqlInfo)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Error occured: %v", err))
 		return &pb.DatabaseResult{Status: "Error", Description: err.Error()}, nil
@@ -58,7 +58,7 @@ func (p Postgres) CreateTable(t *pb.TableRequest) (*pb.TableResponse, error) {
 	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", t.Info.GetDbname())
 	query := fmt.Sprintf("create table %s (%s)", t.GetName(), strings.Join(t.GetColumnDef(), ","))
 	fmt.Println(query)
-	_, err := executeDDLQuery(query, psqlInfo)
+	_, err := executeQuery(query, psqlInfo)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Error occured: %v", err))
 		return nil, err
@@ -72,13 +72,17 @@ func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, erro
 	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", sq.Info.GetDbname())
 	query := fmt.Sprintf("select %s from %s", strings.Join(sq.GetFields(), ","), sq.GetTableName())
 	fmt.Println(query)
-	result, err := executeDMLQuery(query, psqlInfo)
+	result, err := fetchRows(query, psqlInfo)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Error occured: %v", err))
 		return nil, err
 	}
 	defer result.Close()
 	rows, err := getRows(result)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		return nil, err
+	}
 	fmt.Println(rows)
 	//fmt.Println(fmt.Sprintf(" %d Rows: %v", len(rows), rows[0]))
 	return &pb.SelectQueryResult{Status: "Success", Description: "Query fetched some result", Records: rows}, nil
@@ -106,4 +110,17 @@ func getRows(result *sql.Rows) ([]*pb.Row, error) {
 		rows = append(rows, &pb.Row{Columns: protoColumns})
 	}
 	return rows, nil
+}
+
+// ExecuteInsert inserts  a record in a given table
+func (p Postgres) ExecuteInsert(iq *pb.InsertQueryRequest) (*pb.InsertQueryResponse, error) {
+	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", iq.Info.GetDbname())
+	query := fmt.Sprintf("insert into %s(%s)values(%s)", iq.GetTableName(), strings.Join(iq.GetColumns(), ","), strings.Join(iq.GetColumnValues(), ","))
+	result, err := executeQuery(query, psqlInfo)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		return nil, err
+	}
+	lastInsertID, err := result.LastInsertId()
+	return &pb.InsertQueryResponse{Status: "Success", Description: "Record inserted", InsertedId: fmt.Sprintf("%v", lastInsertID)}, nil
 }

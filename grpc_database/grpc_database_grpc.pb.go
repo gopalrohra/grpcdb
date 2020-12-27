@@ -20,6 +20,7 @@ type GRPCDatabaseClient interface {
 	CreateDatabase(ctx context.Context, in *Database, opts ...grpc.CallOption) (*DatabaseResult, error)
 	CreateTable(ctx context.Context, in *TableRequest, opts ...grpc.CallOption) (*TableResponse, error)
 	ExecuteSelect(ctx context.Context, in *SelectQuery, opts ...grpc.CallOption) (*SelectQueryResult, error)
+	ExecuteInsert(ctx context.Context, in *InsertQueryRequest, opts ...grpc.CallOption) (*InsertQueryResponse, error)
 }
 
 type gRPCDatabaseClient struct {
@@ -57,6 +58,15 @@ func (c *gRPCDatabaseClient) ExecuteSelect(ctx context.Context, in *SelectQuery,
 	return out, nil
 }
 
+func (c *gRPCDatabaseClient) ExecuteInsert(ctx context.Context, in *InsertQueryRequest, opts ...grpc.CallOption) (*InsertQueryResponse, error) {
+	out := new(InsertQueryResponse)
+	err := c.cc.Invoke(ctx, "/grpc_database.GRPCDatabase/ExecuteInsert", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GRPCDatabaseServer is the server API for GRPCDatabase service.
 // All implementations must embed UnimplementedGRPCDatabaseServer
 // for forward compatibility
@@ -64,6 +74,7 @@ type GRPCDatabaseServer interface {
 	CreateDatabase(context.Context, *Database) (*DatabaseResult, error)
 	CreateTable(context.Context, *TableRequest) (*TableResponse, error)
 	ExecuteSelect(context.Context, *SelectQuery) (*SelectQueryResult, error)
+	ExecuteInsert(context.Context, *InsertQueryRequest) (*InsertQueryResponse, error)
 	mustEmbedUnimplementedGRPCDatabaseServer()
 }
 
@@ -79,6 +90,9 @@ func (UnimplementedGRPCDatabaseServer) CreateTable(context.Context, *TableReques
 }
 func (UnimplementedGRPCDatabaseServer) ExecuteSelect(context.Context, *SelectQuery) (*SelectQueryResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteSelect not implemented")
+}
+func (UnimplementedGRPCDatabaseServer) ExecuteInsert(context.Context, *InsertQueryRequest) (*InsertQueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteInsert not implemented")
 }
 func (UnimplementedGRPCDatabaseServer) mustEmbedUnimplementedGRPCDatabaseServer() {}
 
@@ -147,6 +161,24 @@ func _GRPCDatabase_ExecuteSelect_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GRPCDatabase_ExecuteInsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InsertQueryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GRPCDatabaseServer).ExecuteInsert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_database.GRPCDatabase/ExecuteInsert",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GRPCDatabaseServer).ExecuteInsert(ctx, req.(*InsertQueryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _GRPCDatabase_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "grpc_database.GRPCDatabase",
 	HandlerType: (*GRPCDatabaseServer)(nil),
@@ -162,6 +194,10 @@ var _GRPCDatabase_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExecuteSelect",
 			Handler:    _GRPCDatabase_ExecuteSelect_Handler,
+		},
+		{
+			MethodName: "ExecuteInsert",
+			Handler:    _GRPCDatabase_ExecuteInsert_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

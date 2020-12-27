@@ -6,6 +6,7 @@ service GRPCDatabase {
     rpc CreateDatabase(Database) returns (DatabaseResult) {}
     rpc CreateTable (TableRequest) returns (TableResponse) {}
     rpc ExecuteSelect(SelectQuery) returns (SelectQueryResult) {}
+    rpc ExecuteInsert(InsertQueryRequest) returns (InsertQueryResponse) {}
 }
 message Database {
     string dbname = 1;
@@ -47,4 +48,15 @@ message TableRequest {
 message TableResponse {
     string status = 1;
     string description = 2;
+}
+message InsertQueryRequest {
+    DatabaseInfo info = 1;
+    string tableName = 2;
+    repeated string columns = 3;
+    repeated string columnValues = 4;
+}
+message InsertQueryResponse {
+    string status = 1;
+    string description = 2;
+    string insertedId = 3;
 }
