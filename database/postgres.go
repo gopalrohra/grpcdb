@@ -70,7 +70,13 @@ func (p Postgres) CreateTable(t *pb.TableRequest) (*pb.TableResponse, error) {
 // and returns the result
 func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, error) {
 	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", sq.Info.GetDbname())
-	query := fmt.Sprintf("select %s from %s", strings.Join(sq.GetFields(), ","), sq.GetTableName())
+	fields := strings.Join(sq.GetFields(), ",")
+	tableName := sq.GetTableName()
+	clauses := strings.Join(sq.GetClauses(), " and ")
+	if clauses != "" {
+		clauses = " where " + clauses
+	}
+	query := fmt.Sprintf("select %s from %s %s", fields, tableName, clauses)
 	fmt.Println(query)
 	result, err := fetchRows(query, psqlInfo)
 	if err != nil {
