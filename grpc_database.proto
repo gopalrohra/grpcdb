@@ -5,8 +5,10 @@ package grpc_database;
 service GRPCDatabase {
     rpc CreateDatabase(Database) returns (DatabaseResult) {}
     rpc CreateTable (TableRequest) returns (TableResponse) {}
+    rpc AlterTable (TableRequest) returns (TableResponse) {}
     rpc ExecuteSelect(SelectQuery) returns (SelectQueryResult) {}
     rpc ExecuteInsert(InsertQueryRequest) returns (InsertQueryResponse) {}
+    rpc ExecuteUpdate(UpdateQuery) returns (UpdateQueryResult) {}
 }
 message Database {
     string dbname = 1;
@@ -27,6 +29,8 @@ message SelectQuery {
     string tableName = 2;
     repeated string fields = 3;
     repeated string clauses = 4;
+    repeated string groupby = 5;
+    repeated string orderby = 6;
 }
 message SelectQueryResult {
     string status = 1;
@@ -59,4 +63,15 @@ message InsertQueryResponse {
     string status = 1;
     string description = 2;
     string insertedId = 3;
+}
+message UpdateQuery {
+    DatabaseInfo info = 1;
+    string tableName = 2;
+    repeated Column columns = 3;
+    repeated string clauses = 4;
+}
+message UpdateQueryResult {
+    string status = 1;
+    string description = 2;
+    string rowsAffected = 3;
 }

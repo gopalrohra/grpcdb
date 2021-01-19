@@ -19,8 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 type GRPCDatabaseClient interface {
 	CreateDatabase(ctx context.Context, in *Database, opts ...grpc.CallOption) (*DatabaseResult, error)
 	CreateTable(ctx context.Context, in *TableRequest, opts ...grpc.CallOption) (*TableResponse, error)
+	AlterTable(ctx context.Context, in *TableRequest, opts ...grpc.CallOption) (*TableResponse, error)
 	ExecuteSelect(ctx context.Context, in *SelectQuery, opts ...grpc.CallOption) (*SelectQueryResult, error)
 	ExecuteInsert(ctx context.Context, in *InsertQueryRequest, opts ...grpc.CallOption) (*InsertQueryResponse, error)
+	ExecuteUpdate(ctx context.Context, in *UpdateQuery, opts ...grpc.CallOption) (*UpdateQueryResult, error)
 }
 
 type gRPCDatabaseClient struct {
@@ -49,6 +51,15 @@ func (c *gRPCDatabaseClient) CreateTable(ctx context.Context, in *TableRequest, 
 	return out, nil
 }
 
+func (c *gRPCDatabaseClient) AlterTable(ctx context.Context, in *TableRequest, opts ...grpc.CallOption) (*TableResponse, error) {
+	out := new(TableResponse)
+	err := c.cc.Invoke(ctx, "/grpc_database.GRPCDatabase/AlterTable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gRPCDatabaseClient) ExecuteSelect(ctx context.Context, in *SelectQuery, opts ...grpc.CallOption) (*SelectQueryResult, error) {
 	out := new(SelectQueryResult)
 	err := c.cc.Invoke(ctx, "/grpc_database.GRPCDatabase/ExecuteSelect", in, out, opts...)
@@ -67,14 +78,25 @@ func (c *gRPCDatabaseClient) ExecuteInsert(ctx context.Context, in *InsertQueryR
 	return out, nil
 }
 
+func (c *gRPCDatabaseClient) ExecuteUpdate(ctx context.Context, in *UpdateQuery, opts ...grpc.CallOption) (*UpdateQueryResult, error) {
+	out := new(UpdateQueryResult)
+	err := c.cc.Invoke(ctx, "/grpc_database.GRPCDatabase/ExecuteUpdate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GRPCDatabaseServer is the server API for GRPCDatabase service.
 // All implementations must embed UnimplementedGRPCDatabaseServer
 // for forward compatibility
 type GRPCDatabaseServer interface {
 	CreateDatabase(context.Context, *Database) (*DatabaseResult, error)
 	CreateTable(context.Context, *TableRequest) (*TableResponse, error)
+	AlterTable(context.Context, *TableRequest) (*TableResponse, error)
 	ExecuteSelect(context.Context, *SelectQuery) (*SelectQueryResult, error)
 	ExecuteInsert(context.Context, *InsertQueryRequest) (*InsertQueryResponse, error)
+	ExecuteUpdate(context.Context, *UpdateQuery) (*UpdateQueryResult, error)
 	mustEmbedUnimplementedGRPCDatabaseServer()
 }
 
@@ -88,11 +110,17 @@ func (UnimplementedGRPCDatabaseServer) CreateDatabase(context.Context, *Database
 func (UnimplementedGRPCDatabaseServer) CreateTable(context.Context, *TableRequest) (*TableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTable not implemented")
 }
+func (UnimplementedGRPCDatabaseServer) AlterTable(context.Context, *TableRequest) (*TableResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AlterTable not implemented")
+}
 func (UnimplementedGRPCDatabaseServer) ExecuteSelect(context.Context, *SelectQuery) (*SelectQueryResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteSelect not implemented")
 }
 func (UnimplementedGRPCDatabaseServer) ExecuteInsert(context.Context, *InsertQueryRequest) (*InsertQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteInsert not implemented")
+}
+func (UnimplementedGRPCDatabaseServer) ExecuteUpdate(context.Context, *UpdateQuery) (*UpdateQueryResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteUpdate not implemented")
 }
 func (UnimplementedGRPCDatabaseServer) mustEmbedUnimplementedGRPCDatabaseServer() {}
 
@@ -143,6 +171,24 @@ func _GRPCDatabase_CreateTable_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GRPCDatabase_AlterTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GRPCDatabaseServer).AlterTable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_database.GRPCDatabase/AlterTable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GRPCDatabaseServer).AlterTable(ctx, req.(*TableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GRPCDatabase_ExecuteSelect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SelectQuery)
 	if err := dec(in); err != nil {
@@ -179,6 +225,24 @@ func _GRPCDatabase_ExecuteInsert_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GRPCDatabase_ExecuteUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateQuery)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GRPCDatabaseServer).ExecuteUpdate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_database.GRPCDatabase/ExecuteUpdate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GRPCDatabaseServer).ExecuteUpdate(ctx, req.(*UpdateQuery))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _GRPCDatabase_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "grpc_database.GRPCDatabase",
 	HandlerType: (*GRPCDatabaseServer)(nil),
@@ -192,12 +256,20 @@ var _GRPCDatabase_serviceDesc = grpc.ServiceDesc{
 			Handler:    _GRPCDatabase_CreateTable_Handler,
 		},
 		{
+			MethodName: "AlterTable",
+			Handler:    _GRPCDatabase_AlterTable_Handler,
+		},
+		{
 			MethodName: "ExecuteSelect",
 			Handler:    _GRPCDatabase_ExecuteSelect_Handler,
 		},
 		{
 			MethodName: "ExecuteInsert",
 			Handler:    _GRPCDatabase_ExecuteInsert_Handler,
+		},
+		{
+			MethodName: "ExecuteUpdate",
+			Handler:    _GRPCDatabase_ExecuteUpdate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
