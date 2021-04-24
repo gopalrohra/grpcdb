@@ -1,3 +1,5 @@
 #!/bin/bash
+set -e
+rm -f bin/*
 go build -o bin/ .
 ./bin/grpcdb
