@@ -7,7 +7,6 @@ import (
 	"net"
 
 	db "github.com/gopalrohra/grpcdb/database"
-	"github.com/gopalrohra/grpcdb/env"
 	pb "github.com/gopalrohra/grpcdb/grpc_database"
 	_ "github.com/lib/pq"
 	grpc "google.golang.org/grpc"
@@ -25,8 +24,6 @@ func databaseImplementations() map[string]db.Database {
 	return map[string]db.Database{"postgres": db.Postgres{}}
 }
 func main() {
-	fmt.Println("Initializing environment.")
-	env.LoadEnvironment()
 	fmt.Println("Starting the grpc database service.")
 	fmt.Println("Opening the port 3099")
 	lis, err := net.Listen("tcp", port)
@@ -39,7 +36,7 @@ func main() {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
-func (s *server) CreateDatabase(ctx context.Context, r *pb.Database) (*pb.DatabaseResult, error) {
+func (s *server) CreateDatabase(ctx context.Context, r *pb.DatabaseInfo) (*pb.DatabaseResult, error) {
 	log.Printf("Received: %v", r)
 
 	result, err := databaseImplementations()["postgres"].CreateDatabase(r)

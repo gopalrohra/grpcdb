@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gopalrohra/grpcdb/env"
 	pb "github.com/gopalrohra/grpcdb/grpc_database"
 )
 
@@ -42,12 +41,12 @@ func fetchRows(query string, psqlInfo string) (*sql.Rows, error) {
 
 //CreateDatabase method creates a new database
 // and returns DatabaseResult defined in grpcdb package
-func (p Postgres) CreateDatabase(d *pb.Database) (*pb.DatabaseResult, error) {
-	psqlInfo := fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=postgres", env.Config["DB_HOST"], env.Config["DB_USER"], env.Config["DB_USER_PASSWORD"])
-	query := fmt.Sprintf("create database %v", d.GetDbname())
+func (p Postgres) CreateDatabase(d *pb.DatabaseInfo) (*pb.DatabaseResult, error) {
+	psqlInfo := fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=postgres", d.GetHost(), d.GetUser(), d.GetPassword())
+	query := fmt.Sprintf("create database %v", d.GetName())
 	_, err := executeQuery(query, psqlInfo)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		fmt.Printf("Error occured: %v\n", err)
 		return &pb.DatabaseResult{Status: "Error", Description: err.Error()}, nil
 	}
 	return &pb.DatabaseResult{Status: "Success", Description: "Database created."}, nil
@@ -56,12 +55,12 @@ func (p Postgres) CreateDatabase(d *pb.Database) (*pb.DatabaseResult, error) {
 // CreateTable method to create a new table
 // and returns a TableResponse with Status either "Success" or "Error"
 func (p Postgres) CreateTable(t *pb.TableRequest) (*pb.TableResponse, error) {
-	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", t.Info.GetDbname())
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", t.Info.GetHost(), t.Info.GetPort(), t.Info.GetUser(), t.Info.GetPassword(), t.Info.GetName())
 	query := fmt.Sprintf("create table %s (%s)", t.GetName(), strings.Join(t.GetColumnDef(), ","))
 	fmt.Println(query)
 	_, err := executeQuery(query, psqlInfo)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		fmt.Printf("Error occured: %v\n", err)
 		return nil, err
 	}
 	return &pb.TableResponse{Status: "Success", Description: "Table created"}, nil
@@ -70,7 +69,7 @@ func (p Postgres) CreateTable(t *pb.TableRequest) (*pb.TableResponse, error) {
 // ExecuteSelect methods creates a select query
 // and returns the result
 func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, error) {
-	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", sq.Info.GetDbname())
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", sq.Info.GetHost(), sq.Info.GetPort(), sq.Info.GetUser(), sq.Info.GetPassword(), sq.Info.GetName())
 	fields := strings.Join(sq.GetFields(), ",")
 	tableName := sq.GetTableName()
 	clauses := strings.Join(sq.GetClauses(), " and ")
@@ -81,13 +80,13 @@ func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, erro
 	fmt.Println(query)
 	result, err := fetchRows(query, psqlInfo)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		fmt.Printf("Error occured: %v\n", err)
 		return nil, err
 	}
 	defer result.Close()
 	rows, err := getRows(result)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		fmt.Printf("Error occured: %v\n", err)
 		return nil, err
 	}
 	fmt.Println(rows)
@@ -100,7 +99,7 @@ func getRows(result *sql.Rows) ([]*pb.Row, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(fmt.Sprintf("Columns: %v", columns))
+	fmt.Printf("Columns: %v\n", columns)
 	rows := make([]*pb.Row, 0)
 	for result.Next() {
 		columnValues := make([]interface{}, len(columns))
@@ -121,13 +120,18 @@ func getRows(result *sql.Rows) ([]*pb.Row, error) {
 
 // ExecuteInsert inserts  a record in a given table
 func (p Postgres) ExecuteInsert(iq *pb.InsertQueryRequest) (*pb.InsertQueryResponse, error) {
-	psqlInfo := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s", iq.Info.GetDbname())
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", iq.Info.GetHost(), iq.Info.GetPort(), iq.Info.GetUser(), iq.Info.GetPassword(), iq.Info.GetName())
 	query := fmt.Sprintf("insert into %s(%s)values(%s)", iq.GetTableName(), strings.Join(iq.GetColumns(), ","), strings.Join(iq.GetColumnValues(), ","))
 	result, err := executeQuery(query, psqlInfo)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Error occured: %v", err))
+		fmt.Printf("Error occured: %v\n", err)
 		return nil, err
 	}
 	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Printf("Error occured: %v\n", err)
+		return nil, err
+	}
+
 	return &pb.InsertQueryResponse{Status: "Success", Description: "Record inserted", InsertedId: fmt.Sprintf("%v", lastInsertID)}, nil
 }

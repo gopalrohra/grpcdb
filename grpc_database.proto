@@ -3,23 +3,20 @@ option go_package = "github.com/gopalrohra/grpcdb";
 package grpc_database;
 
 service GRPCDatabase {
-    rpc CreateDatabase(Database) returns (DatabaseResult) {}
+    rpc CreateDatabase(DatabaseInfo) returns (DatabaseResult) {}
     rpc CreateTable (TableRequest) returns (TableResponse) {}
     rpc AlterTable (TableRequest) returns (TableResponse) {}
     rpc ExecuteSelect(SelectQuery) returns (SelectQueryResult) {}
     rpc ExecuteInsert(InsertQueryRequest) returns (InsertQueryResponse) {}
     rpc ExecuteUpdate(UpdateQuery) returns (UpdateQueryResult) {}
 }
-message Database {
-    string dbname = 1;
-    string dbtype = 2;
-    string dbuser = 3;
-    string dbpassword = 4;
-}
 message DatabaseInfo {
     string user = 1;
     string password = 2;
-    string dbname = 3;
+    string Name = 3;
+    string Type = 4;
+    string Host = 5;
+    string Port = 6;
 }
 message DatabaseResult {
     string status = 1;

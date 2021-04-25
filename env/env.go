@@ -13,6 +13,7 @@ var Config = map[string]string{}
 
 // LoadEnvironment loads .env for production and .env.<env_name> for specific environment
 func LoadEnvironment() {
+	fmt.Println("Initializing environment.")
 	//set mode to production, development, staging etc
 	mode := os.Getenv("GO_ENV")
 	if mode == "" {

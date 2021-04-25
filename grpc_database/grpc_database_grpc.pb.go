@@ -17,7 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GRPCDatabaseClient interface {
-	CreateDatabase(ctx context.Context, in *Database, opts ...grpc.CallOption) (*DatabaseResult, error)
+	CreateDatabase(ctx context.Context, in *DatabaseInfo, opts ...grpc.CallOption) (*DatabaseResult, error)
 	CreateTable(ctx context.Context, in *TableRequest, opts ...grpc.CallOption) (*TableResponse, error)
 	AlterTable(ctx context.Context, in *TableRequest, opts ...grpc.CallOption) (*TableResponse, error)
 	ExecuteSelect(ctx context.Context, in *SelectQuery, opts ...grpc.CallOption) (*SelectQueryResult, error)
@@ -33,7 +33,7 @@ func NewGRPCDatabaseClient(cc grpc.ClientConnInterface) GRPCDatabaseClient {
 	return &gRPCDatabaseClient{cc}
 }
 
-func (c *gRPCDatabaseClient) CreateDatabase(ctx context.Context, in *Database, opts ...grpc.CallOption) (*DatabaseResult, error) {
+func (c *gRPCDatabaseClient) CreateDatabase(ctx context.Context, in *DatabaseInfo, opts ...grpc.CallOption) (*DatabaseResult, error) {
 	out := new(DatabaseResult)
 	err := c.cc.Invoke(ctx, "/grpc_database.GRPCDatabase/CreateDatabase", in, out, opts...)
 	if err != nil {
@@ -91,7 +91,7 @@ func (c *gRPCDatabaseClient) ExecuteUpdate(ctx context.Context, in *UpdateQuery,
 // All implementations must embed UnimplementedGRPCDatabaseServer
 // for forward compatibility
 type GRPCDatabaseServer interface {
-	CreateDatabase(context.Context, *Database) (*DatabaseResult, error)
+	CreateDatabase(context.Context, *DatabaseInfo) (*DatabaseResult, error)
 	CreateTable(context.Context, *TableRequest) (*TableResponse, error)
 	AlterTable(context.Context, *TableRequest) (*TableResponse, error)
 	ExecuteSelect(context.Context, *SelectQuery) (*SelectQueryResult, error)
@@ -104,7 +104,7 @@ type GRPCDatabaseServer interface {
 type UnimplementedGRPCDatabaseServer struct {
 }
 
-func (UnimplementedGRPCDatabaseServer) CreateDatabase(context.Context, *Database) (*DatabaseResult, error) {
+func (UnimplementedGRPCDatabaseServer) CreateDatabase(context.Context, *DatabaseInfo) (*DatabaseResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDatabase not implemented")
 }
 func (UnimplementedGRPCDatabaseServer) CreateTable(context.Context, *TableRequest) (*TableResponse, error) {
@@ -136,7 +136,7 @@ func RegisterGRPCDatabaseServer(s grpc.ServiceRegistrar, srv GRPCDatabaseServer)
 }
 
 func _GRPCDatabase_CreateDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Database)
+	in := new(DatabaseInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func _GRPCDatabase_CreateDatabase_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/grpc_database.GRPCDatabase/CreateDatabase",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GRPCDatabaseServer).CreateDatabase(ctx, req.(*Database))
+		return srv.(GRPCDatabaseServer).CreateDatabase(ctx, req.(*DatabaseInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
