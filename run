@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
 rm -f bin/*
+cp .env* bin/
 go build -o bin/ .
-./bin/grpcdb
+GO_ENV=development ./bin/grpcdb

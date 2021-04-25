@@ -43,5 +43,5 @@ func LoadEnvironment() {
 			}
 		}
 	}
-	fmt.Println(config)
+	fmt.Println(Config)
 }

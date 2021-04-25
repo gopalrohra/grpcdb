@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gopalrohra/grpcdb/env"
 	pb "github.com/gopalrohra/grpcdb/grpc_database"
 )
 
@@ -42,7 +43,7 @@ func fetchRows(query string, psqlInfo string) (*sql.Rows, error) {
 //CreateDatabase method creates a new database
 // and returns DatabaseResult defined in grpcdb package
 func (p Postgres) CreateDatabase(d *pb.Database) (*pb.DatabaseResult, error) {
-	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres"
+	psqlInfo := fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=postgres", env.Config["DB_HOST"], env.Config["DB_USER"], env.Config["DB_USER_PASSWORD"])
 	query := fmt.Sprintf("create database %v", d.GetDbname())
 	_, err := executeQuery(query, psqlInfo)
 	if err != nil {
