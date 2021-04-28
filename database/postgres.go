@@ -89,7 +89,7 @@ func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, erro
 		fmt.Printf("Error occured: %v\n", err)
 		return nil, err
 	}
-	fmt.Println(rows)
+	// fmt.Println(rows)
 	//fmt.Println(fmt.Sprintf(" %d Rows: %v", len(rows), rows[0]))
 	return &pb.SelectQueryResult{Status: "Success", Description: "Query fetched some result", Records: rows}, nil
 }
@@ -134,4 +134,30 @@ func (p Postgres) ExecuteInsert(iq *pb.InsertQueryRequest) (*pb.InsertQueryRespo
 	}
 
 	return &pb.InsertQueryResponse{Status: "Success", Description: "Record inserted", InsertedId: fmt.Sprintf("%v", lastInsertID)}, nil
+}
+
+// ExecuteUpdate updates a record in a given table
+func (p Postgres) ExecuteUpdate(updateQuery *pb.UpdateQuery) (*pb.UpdateQueryResult, error) {
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", updateQuery.Info.GetHost(), updateQuery.Info.GetPort(), updateQuery.Info.GetUser(), updateQuery.Info.GetPassword(), updateQuery.Info.GetName())
+	columnValues := getColumnValues(updateQuery.Columns)
+	query := fmt.Sprintf("update %s set %s where %s", updateQuery.GetTableName(), columnValues, strings.Join(updateQuery.GetClauses(), " and "))
+	fmt.Println(query)
+	result, err := executeQuery(query, psqlInfo)
+	if err != nil {
+		fmt.Printf("Error occured: %v\n", err)
+		return nil, err
+	}
+	rowsAffected, _ := result.RowsAffected()
+	return &pb.UpdateQueryResult{Status: "Success", Description: "Record updated", RowsAffected: fmt.Sprintf("%v", rowsAffected)}, nil
+}
+func getColumnValues(columns []*pb.Column) string {
+	var resultColumns []string
+	for _, col := range columns {
+		resultColumns = append(resultColumns, col.GetColumnName()+"="+col.GetColumnValue())
+	}
+	if len(resultColumns) == 0 {
+		fmt.Println("Error as no columns specified")
+		return ""
+	}
+	return strings.Join(resultColumns, ", ")
 }

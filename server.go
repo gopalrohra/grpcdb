@@ -73,3 +73,12 @@ func (s *server) ExecuteInsert(ctx context.Context, r *pb.InsertQueryRequest) (*
 	}
 	return result, nil
 }
+func (s *server) ExecuteUpdate(ctx context.Context, r *pb.UpdateQuery) (*pb.UpdateQueryResult, error) {
+	log.Printf("Received: %v\n", r)
+
+	result, err := databaseImplementations()["postgres"].ExecuteUpdate(r)
+	if err != nil {
+		return &pb.UpdateQueryResult{Status: "Error", Description: err.Error()}, nil
+	}
+	return result, nil
+}
