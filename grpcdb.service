@@ -1,0 +1,14 @@
+#create directory on production like this:
+# mkdir -p ~/.config/systemd/user
+#put this file in the above created directory
+# run systemctl --user daemon-reload
+#to start:
+# systemctl --user start grpcdb.service
+#to stop:
+# systemctl --user stop grpcdb.service
+[Unit]
+Description= instance to serve database over grpc
+
+[Service]
+ExecStart=/home/caretaker/deployments/grpcdb/current
+WorkingDirectory=/home/caretaker/deployments/grpcdb

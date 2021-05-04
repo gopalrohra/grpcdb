@@ -42,6 +42,7 @@ message Row {
 message Column {
     string columnName = 1;
     string columnValue = 2;
+    string columnType = 3;
 }
 message TableRequest {
     DatabaseInfo info = 1;

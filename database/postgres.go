@@ -73,10 +73,18 @@ func (p Postgres) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, erro
 	fields := strings.Join(sq.GetFields(), ",")
 	tableName := sq.GetTableName()
 	clauses := strings.Join(sq.GetClauses(), " and ")
+	groupBy := strings.Join(sq.GetGroupby(), ", ")
+	orderBy := strings.Join(sq.GetOrderby(), ", ")
 	if clauses != "" {
 		clauses = " where " + clauses
 	}
-	query := fmt.Sprintf("select %s from %s %s", fields, tableName, clauses)
+	if groupBy != "" {
+		groupBy = " group by " + groupBy
+	}
+	if orderBy != "" {
+		orderBy = " order by " + orderBy
+	}
+	query := fmt.Sprintf("select %s from %s %s %s %s", fields, tableName, clauses, groupBy, orderBy)
 	fmt.Println(query)
 	result, err := fetchRows(query, psqlInfo)
 	if err != nil {
