@@ -58,6 +58,7 @@ message InsertQueryRequest {
     string tableName = 2;
     repeated string columns = 3;
     repeated string columnValues = 4;
+    string returningIdColumnName = 5;
 }
 message InsertQueryResponse {
     string status = 1;

@@ -25,6 +25,28 @@ func executeQuery(query string, psqlInfo string) (sql.Result, error) {
 	return result, nil
 }
 
+func executeInsertQuery(query string, psqlInfo string, returnValueExpected bool) (string, error) {
+	db, dbErr := sql.Open("postgres", psqlInfo)
+	if dbErr != nil {
+		return "", dbErr
+	}
+	defer db.Close()
+
+	returnID := ""
+
+	var err error
+	if returnValueExpected {
+		//result, err = db.Exec(query).scan(&returnID)
+		err = db.QueryRow(query).Scan((&returnID))
+	} else {
+		_, err = db.Exec(query)
+	}
+	if err != nil {
+		return "", err
+	}
+	return returnID, nil
+}
+
 func fetchRows(query string, psqlInfo string) (*sql.Rows, error) {
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -130,18 +152,21 @@ func getRows(result *sql.Rows) ([]*pb.Row, error) {
 func (p Postgres) ExecuteInsert(iq *pb.InsertQueryRequest) (*pb.InsertQueryResponse, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", iq.Info.GetHost(), iq.Info.GetPort(), iq.Info.GetUser(), iq.Info.GetPassword(), iq.Info.GetName())
 	query := fmt.Sprintf("insert into %s(%s)values(%s)", iq.GetTableName(), strings.Join(iq.GetColumns(), ","), strings.Join(iq.GetColumnValues(), ","))
-	result, err := executeQuery(query, psqlInfo)
+	if iq.ReturningIdColumnName != "" {
+		query = fmt.Sprintf("%s returning %s", query, iq.ReturningIdColumnName)
+	}
+	result, err := executeInsertQuery(query, psqlInfo, (iq.ReturningIdColumnName != ""))
 	if err != nil {
 		fmt.Printf("Error occured: %v\n", err)
 		return nil, err
 	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil {
-		fmt.Printf("Error occured: %v\n", err)
-		return nil, err
-	}
+	// lastInsertID, err := result.LastInsertId()
+	// if err != nil {
+	// 	fmt.Printf("Error occured: %v\n", err)
+	// 	return nil, err
+	// }
 
-	return &pb.InsertQueryResponse{Status: "Success", Description: "Record inserted", InsertedId: fmt.Sprintf("%v", lastInsertID)}, nil
+	return &pb.InsertQueryResponse{Status: "Success", Description: "Record inserted", InsertedId: fmt.Sprintf("%v", result)}, nil
 }
 
 // ExecuteUpdate updates a record in a given table
