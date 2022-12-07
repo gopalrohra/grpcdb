@@ -21,7 +21,8 @@ type server struct {
 }
 
 func databaseImplementations() map[string]db.Database {
-	return map[string]db.Database{"postgres": db.Postgres{}}
+	qb := new(db.GenericSQLDBQueryBuilder)
+	return map[string]db.Database{"postgres": db.Database{DriverName: "postgres", QBuilder: qb}}
 }
 func main() {
 	fmt.Println("Starting the grpc database service.")
