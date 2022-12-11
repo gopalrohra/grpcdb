@@ -9,9 +9,13 @@ import (
 
 type PostgresDBQueryBuilder struct{}
 
-func (qb PostgresDBQueryBuilder) GetDSN(d *pb.DatabaseInfo) string {
+func (qb PostgresDBQueryBuilder) GetDSN(d *pb.DatabaseInfo, selectDB bool) string {
 
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", d.GetHost(), d.GetPort(), d.GetUser(), d.GetPassword(), d.GetName())
+	if selectDB {
+		return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", d.GetHost(), d.GetPort(), d.GetUser(), d.GetPassword(), d.GetName())
+	}
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s sslmode=disable", d.GetHost(), d.GetPort(), d.GetUser(), d.GetPassword())
+
 }
 
 func (qb PostgresDBQueryBuilder) GetDBCreationQuery(d *pb.DatabaseInfo) string {

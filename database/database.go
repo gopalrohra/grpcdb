@@ -75,7 +75,7 @@ func (database Database) fetchRows(query string, psqlInfo string) (*sql.Rows, er
 // and returns DatabaseResult defined in grpcdb package
 func (database Database) CreateDatabase(d *pb.DatabaseInfo) (*pb.DatabaseResult, error) {
 
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s sslmode=disable", d.GetHost(), d.GetPort(), d.GetUser(), d.GetPassword())
+	psqlInfo := database.QBuilder.GetDSN(d, false)
 	query := database.QBuilder.GetDBCreationQuery(d)
 	_, err := database.executeQuery(query, psqlInfo)
 	if err != nil {
@@ -88,7 +88,7 @@ func (database Database) CreateDatabase(d *pb.DatabaseInfo) (*pb.DatabaseResult,
 // CreateTable method to create a new table
 // and returns a TableResponse with Status either "Success" or "Error"
 func (database Database) CreateTable(t *pb.TableRequest) (*pb.TableResponse, error) {
-	psqlInfo := database.QBuilder.GetDSN(t.Info)
+	psqlInfo := database.QBuilder.GetDSN(t.Info, true)
 	query := database.QBuilder.GetTableCreationQuery(t)
 	fmt.Println(query)
 	_, err := database.executeQuery(query, psqlInfo)
@@ -102,7 +102,7 @@ func (database Database) CreateTable(t *pb.TableRequest) (*pb.TableResponse, err
 // ExecuteSelect methods creates a select query
 // and returns the result
 func (database Database) ExecuteSelect(sq *pb.SelectQuery) (*pb.SelectQueryResult, error) {
-	psqlInfo := database.QBuilder.GetDSN(sq.Info)
+	psqlInfo := database.QBuilder.GetDSN(sq.Info, true)
 	query := database.QBuilder.GetSelectionQuery(sq)
 	fmt.Println(query)
 	result, err := database.fetchRows(query, psqlInfo)
@@ -146,7 +146,7 @@ func getRows(result *sql.Rows) ([]*pb.Row, error) {
 
 // ExecuteInsert inserts  a record in a given table
 func (database Database) ExecuteInsert(iq *pb.InsertQueryRequest) (*pb.InsertQueryResponse, error) {
-	psqlInfo := database.QBuilder.GetDSN(iq.Info)
+	psqlInfo := database.QBuilder.GetDSN(iq.Info, true)
 	query := database.QBuilder.GetInsertionQuery(iq)
 	fmt.Println("Query to be executed", query)
 	if iq.ReturningIdColumnName != "" {
@@ -168,7 +168,7 @@ func (database Database) ExecuteInsert(iq *pb.InsertQueryRequest) (*pb.InsertQue
 
 // ExecuteUpdate updates a record in a given table
 func (database Database) ExecuteUpdate(updateQuery *pb.UpdateQuery) (*pb.UpdateQueryResult, error) {
-	psqlInfo := database.QBuilder.GetDSN(updateQuery.Info)
+	psqlInfo := database.QBuilder.GetDSN(updateQuery.Info, true)
 	query := database.QBuilder.GetUpdationQuery(updateQuery)
 	fmt.Println(query)
 	result, err := database.executeQuery(query, psqlInfo)
