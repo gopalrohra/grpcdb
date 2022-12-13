@@ -6,9 +6,10 @@ import (
 	"log"
 	"net"
 
+	_ "github.com/go-sql-driver/mysql"
 	db "github.com/gopalrohra/grpcdb/database"
 	pb "github.com/gopalrohra/grpcdb/grpc_database"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	grpc "google.golang.org/grpc"
 )
 
@@ -18,7 +19,8 @@ const (
 )
 
 var databases = map[string]db.Database{
-	"postgres": db.Database{DriverName: "postgres", QBuilder: new(db.GenericSQLQueryBuilder), DSNBuilder: new(db.PostgresDSNBuilder)},
+	"postgres": db.Database{DriverName: "pgx", QBuilder: new(db.GenericSQLQueryBuilder), DSNBuilder: new(db.PostgresDSNBuilder)},
+	"mysql":    db.Database{DriverName: "mysql", QBuilder: new(db.GenericSQLQueryBuilder), DSNBuilder: new(db.MySQLDSNBuilder)},
 }
 
 type server struct {
