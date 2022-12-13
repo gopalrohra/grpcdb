@@ -5,7 +5,6 @@ import (
 )
 
 type QueryBuilder interface {
-	GetDSN(*pb.DatabaseInfo, bool) string
 	GetDBCreationQuery(*pb.DatabaseInfo) string
 	GetTableCreationQuery(*pb.TableRequest) string
 	GetSelectionQuery(*pb.SelectQuery) string
