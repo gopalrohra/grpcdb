@@ -18,7 +18,7 @@ const (
 )
 
 var databases = map[string]db.Database{
-	"postgres": db.Database{DriverName: "postgres", QBuilder: new(db.PostgresDBQueryBuilder)},
+	"postgres": db.Database{DriverName: "postgres", QBuilder: new(db.GenericSQLQueryBuilder), DSNBuilder: new(db.PostgresDSNBuilder)},
 }
 
 type server struct {
