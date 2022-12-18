@@ -8,7 +8,7 @@ import (
 
 type PostgresDSNBuilder struct{}
 
-func (builder PostgresDSNBuilder) GetDSN(d *pb.DatabaseInfo, selectDB bool) string {
+func (builder *PostgresDSNBuilder) GetDSN(d *pb.DatabaseInfo, selectDB bool) string {
 
 	if selectDB {
 		return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", d.GetHost(), d.GetPort(), d.GetUser(), d.GetPassword(), d.GetName())
