@@ -6,20 +6,21 @@ echo "building golang app for production .................."
 cp .env* build/
 GOOS=linux GOARCH=amd64 go build -o build/ .
 ts=`date +%Y%m%d%H%M%S`
+remote_server=51.91.126.88
 PROD_APP_DIR="~/deployments/grpcdb"
 echo "Creating initial directories on production................"
-ssh caretaker@appshome.in << EOF
-echo "Connected successfully to appshome.in."
+ssh caretaker@$remote_server << EOF
+echo "Connected successfully to $remote_server."
 set -e
 echo "Creating directory structure for artifacts................"
 mkdir -p $PROD_APP_DIR/build
 EOF
 echo "Shipping artifacts to production."
-scp build/grpcdb caretaker@appshome.in:$PROD_APP_DIR/build/
+scp build/grpcdb caretaker@$remote_server:$PROD_APP_DIR/build/
 
 echo "Connecting to production server."
-ssh caretaker@appshome.in << EOF
-echo "Connected successfully to appshome.in."
+ssh caretaker@$remote_server << EOF
+echo "Connected successfully to $remote_server."
 set -e
 echo "Coppying the artifacts."
 cp $PROD_APP_DIR/build/grpcdb $PROD_APP_DIR/grpcdb-$ts
@@ -33,7 +34,7 @@ systemctl --user start grpcdb.service
 echo "Removing the artifacts."
 rm -rf $PROD_APP_DIR/build
 echo "Deployment successful ............."
-echo "Terminating the connection to appshome.in."
+echo "Terminating the connection to $remote_server."
 EOF
 echo "Cleaning up the artifacts locally."
 rm -rf build
